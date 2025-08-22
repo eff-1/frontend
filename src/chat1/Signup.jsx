@@ -17,7 +17,7 @@ export const Signup = () => {
     }
 
     try {
-      await axios.post("http://localhost:5000/signup", { username, password });
+      await axios.post("https://backend-9a6w.onrender.com", { username, password });
       navigate("/login");
     } catch (err) {
       alert(err.response?.data?.error);

@@ -16,7 +16,7 @@ import { MdSend } from 'react-icons/md';
 
 import './chat.css'; 
 
-const URL = "http://localhost:5000";
+const URL = "https://backend-9a6w.onrender.com";
 
 export const Dashboard = () => {
     const [messages, setMessages] = useState([]);
