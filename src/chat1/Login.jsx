@@ -17,7 +17,7 @@ export const Login = () => {
     }
 
     try {
-      const res = await axios.post("https://chat-backend-9ujd.onrender.", {
+      const res = await axios.post("https://backend-aq6c.onrender.com.", {
         username,
         password,
       });
