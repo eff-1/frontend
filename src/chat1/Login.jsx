@@ -17,7 +17,7 @@ export const Login = () => {
     }
 
     try {
-      const res = await axios.post("https://backend-ei6d.onrender.com", {
+      const res = await axios.post("https://backend-aq6c.onrender.com", {
         username,
         password,
       });
