@@ -17,7 +17,7 @@ export const Login = () => {
     }
 
     try {
-      const res = await axios.post("https://backend-9a6w.onrender.com", {
+      const res = await axios.post("https://backend-ei6d.onrender.com", {
         username,
         password,
       });
@@ -50,7 +50,7 @@ export const Login = () => {
             />
           </div>
 
-          <button type="submit" className="login-button">  Sign In</button>
+          <button type="submit" className="login-button"> Sign In</button>
         </form>
 
         <div className="login-footer">
