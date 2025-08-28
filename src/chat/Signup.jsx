@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import "./Login.css"; // same style pattern as Login.css
+import "./Login.css"; // reuse same CSS for spinner + form styles
 
 export const Signup = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false); // 🔹 spinner state
   const navigate = useNavigate();
 
   const signupData = async (e) => {
@@ -16,16 +17,29 @@ export const Signup = () => {
       return;
     }
 
+    setLoading(true); // show spinner
+
     try {
-      await axios.post("https://backend-aq6c.onrender.com", { username, password });
+      await axios.post(`${import.meta.env.VITE_API_URL}/signup`, { username, password });
+      alert("Signed up Successfully");
       navigate("/login");
     } catch (err) {
-      alert(err.response?.data?.error);
+      alert(err.response?.data?.error || "Signup failed");
+    } finally {
+      setLoading(false); // hide spinner
     }
   };
 
   return (
     <div className="signup-container">
+      {/* 🔹 Full screen spinner */}
+      {loading && (
+        <div className="screen-spinner">
+          <div className="loader"></div>
+          <p className="loader-text">Creating your account...</p>
+        </div>
+      )}
+
       <div className="signup-card">
         <div className="signup-header">
           <h1 className="signup-title">Create Account</h1>
@@ -40,6 +54,7 @@ export const Signup = () => {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               className="signup-input"
+              disabled={loading}
             />
           </div>
 
@@ -50,11 +65,12 @@ export const Signup = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="signup-input"
+              disabled={loading}
             />
           </div>
 
-          <button type="submit" className="signup-button">
-            Sign Up
+          <button type="submit" className="signup-button" disabled={loading}>
+            {loading ? "Signing Up..." : "Sign Up"}
           </button>
         </form>
 

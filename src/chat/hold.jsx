@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 
 export const Dashboard=()=>{
     const [app, setApp] = useState([]);
-    const URL = "http://localhost:5000/app";
+    const URL = `${import.meta.env.VITE_API_URL}/app`;
       const user = JSON.parse(localStorage.getItem("user"));
       const navigate = useNavigate();
 
@@ -24,7 +24,7 @@ export const Dashboard=()=>{
         localStorage.removeItem("user");
         navigate("/login")
     }
-https://chat-backend-9ujd.onrender.com
+
     useEffect(()=>{
         fetchData();
     }, []);
@@ -103,3 +103,5 @@ route.post("/signup", (req, res)=>{
 
 module.exports = route;
 // endauth
+
+// ➤
