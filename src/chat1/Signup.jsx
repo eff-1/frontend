@@ -17,7 +17,7 @@ export const Signup = () => {
     }
 
     try {
-      await axios.post("https://chat-backend-9ujd.onrender.com", { username, password });
+      await axios.post("https://backend-aq6c.onrender.com", { username, password });
       navigate("/login");
     } catch (err) {
       alert(err.response?.data?.error);

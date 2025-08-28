@@ -24,7 +24,7 @@ export const Dashboard=()=>{
         localStorage.removeItem("user");
         navigate("/login")
     }
-
+https://chat-backend-9ujd.onrender.com
     useEffect(()=>{
         fetchData();
     }, []);
