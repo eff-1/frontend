@@ -1,107 +1,1101 @@
-// dashboard    
+// css
+
+:root {
+  /* Fresh & Clean (Light) */
+  --bg: #eef3f8;
+  --text: #111827;
+  --muted: #6B7280;
+  --panel: #FFFFFF;
+  --panel-2: #F3F4F6;
+  --border: #E5E7EB;
+  --accent: #3B82F6;
+  --accent-600: #2563EB;
+  --accent-100: #1E3A8A;
+  --info: #38BDF8;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+  --shadow: 0 10px 25px rgba(0,0,0,0.06);
+}
+
+body.dark {
+  /* Neo Blue Glow (Dark) */
+  --bg: #0F172A;
+  --text: #E2E8F0;
+  --muted: #94A3B8;
+  --panel: #111827;
+  --panel-2: #0B1221;
+  --border: #1F2937;
+  --accent: #3B82F6;
+  --accent-600: #2563EB;
+  --accent-100: #1E3A8A;
+  --info: #38BDF8;
+  --warning: #F59E0B;
+  --danger: #F87171;
+  --shadow: 0 10px 25px rgba(0,0,0,0.4);
+}
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+body {
+  margin: 0;
+  width: 100%;
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  background: var(--bg);
+  color: var(--text);
+  transition: background .3s, color .3s;
+}
+
+.app {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  /* grid-template-rows: 56px 1fr; */
+  height: 100vh;
+  overflow: hidden; /* Prevent body scrolling */
+}
+
+/* Top bar */
+.topbar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  /* margin: 0 30px; */
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+.brand .logo {
+  text-align: center;
+  border-radius: 8px;
+  background: linear-gradient(135deg, lime, var(--accent-600));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  width: fit-content;
+  height: 32px;
+  font-size: 1.2rem;
+  /* padding: 10px; */
+}
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.icon-btn {
+  border: 1px solid var(--border);
+  background: var(--panel);
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform .04s ease, background .2s ease;
+  color: var(--text);
+}
+.icon-btn:hover { background: var(--panel-2); }
+.icon-btn:active { transform: translateY(1px); }
+
+/* Layout: sidebar + chat - FIXED HEIGHT */
+.main {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  height: calc(100vh - 56px);
+  overflow: hidden;
+  position: relative;
+}
+
+/* Sidebar - PROPER SCROLLING */
+.sidebar {
+  border-right: 1px solid var(--border);
+  background: var(--panel);
+  display: grid;
+  grid-template-rows: auto 1fr;
+  overflow: hidden; /* Prevent sidebar from scrolling as whole */
+  height: 100%;
+}
+
+.search {
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--panel);
+  flex-shrink: 0; /* Don't shrink */
+}
+.search input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--text);
+  outline: none;
+}
 
 
-import { useState, useEffect } from "react";
+
+
+
+
+
+/* FIXED: Only chats list scrolls, not entire sidebar */
+.chats {
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0; /* Critical for grid/flex scrolling */
+  -webkit-overflow-scrolling: touch; /* Smooth mobile scrolling */
+}
+
+.chat-item {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 12px;
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+  align-items: center;
+  cursor: pointer;
+  transition: background .2s ease;
+  /* width: 200px !important; */
+}
+.chat-item:hover, .chat-item.active { background: var(--panel-2); }
+.avatar {
+  width: fit-content;
+  height: 34px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, lime, var(--accent-600));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+  padding:3px 10px;
+}
+.chat-meta { display: flex; align-items: center; gap: 6px; }
+.name { font-weight: 600; }
+.preview { color: var(--muted); font-size: 14px; margin-top: 4px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+/* Chat area - FIXED HEIGHT */
+.chat {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  background: var(--bg);
+  border-left: 1px solid var(--border);
+  overflow: hidden; /* Prevent whole chat from scrolling */
+  height: 100%;
+}
+
+.chat-header {
+  padding: 12px 16px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0; /* Don't shrink */
+}
+.chat-header .title {
+  display: grid;
+  gap: 4px;
+}
+.chat-header .title .name { font-size: 16px; font-weight: 700; }
+
+/* FIXED: Only messages scroll, not entire chat */
+.messages {
+  padding: 16px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0; /* Critical for grid scrolling */
+  -webkit-overflow-scrolling: touch; /* Smooth mobile scrolling */
+}
+
+.day-divider {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.day-divider::before, .day-divider::after {
+  content: "";
+  height: 1px;
+  background: var(--border);
+  display: block;
+}
+
+.msg {
+  max-width: min(70%, 540px);
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  position: relative;
+  transition: transform .1s ease, box-shadow .1s ease;
+}
+.msg .meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 6px;
+}
+.msg .actions {
+  position: absolute;
+  top: -10px;
+  right: 8px;
+  display: flex;
+  gap: 6px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.msg:hover .actions { opacity: 1; }
+.msg.from-me .actions { right: auto; left: 8px; }
+.bubble { line-height: 1.4; white-space: pre-wrap; word-wrap: break-word; }
+.sender-name {
+    font-weight: bold;
+    color: var(--accent);
+}
+
+.from-me {
+  margin-left: auto;
+  background: linear-gradient(135deg, green, var(--accent-600));
+  color: white;
+  border: none;
+}
+.from-me .meta { color: rgba(255,255,255,0.8); }
+.from-me .actions .icon-btn { background: rgba(255,255,255,0.1); border: none; color: white; }
+.from-me .sender-name { color: white; }
+
+/* Styling for replied messages */
+.msg.reply {
+  padding-left: 10px;
+  padding-right: 12px;
+  border-left: 3px solid var(--accent);
+  border-top: none;
+  border-bottom: none;
+  border-right: none;
+}
+.msg.reply .reply-to {
+  font-size: 12px;
+  margin-bottom: 6px;
+  font-style: italic;
+  display: block;
+  color: var(--text);
+}
+
+.msg.from-me.reply {
+  border-left: 3px solid var(--border);
+}
+.msg.from-me.reply .reply-to {
+    color: white;
+}
+
+/* Composer - FIXED AT BOTTOM */
+.composer {
+  padding: 12px;
+  border-top: 1px solid var(--border);
+  background: var(--panel);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0; /* Don't shrink */
+}
+.composer textarea {
+  width: 100%;
+  resize: none;
+  min-height: 44px;
+  max-height: 120px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  outline: none;
+  background: var(--panel-2);
+  color: var(--text);
+}
+.composer .send {
+  width: 44px;
+  height: 44px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+.composer .send:disabled { opacity: 0.6; cursor: not-allowed; }
+.composer .send-icon {color: white}
+
+/* Reply composer */
+.composer-reply-pill {
+    grid-column: 1 / 3;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--panel-2);
+}
+.composer-reply-pill .pill-text {
+    font-size: 14px;
+    color: var(--muted);
+}
+.composer-reply-pill .close-pill {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 1.2rem;
+    padding: 0;
+}
+
+/* Mobile Navigation */
+.menu-btn {
+    display: none;
+    border: none;
+    background: transparent;
+    font-size: 1.5rem;
+    color: var(--text);
+    cursor: pointer;
+}
+
+.go-back-btn {
+    display: none;
+    border: none;
+    background: transparent;
+    font-size: 1.5rem;
+    color: var(--text);
+    cursor: pointer;
+}
+
+/* MOBILE RESPONSIVE - WhatsApp Style */
+@media (max-width: 980px) {
+  .main { 
+    grid-template-columns: 1fr; 
+    position: relative;
+  }
+  
+  .menu-btn { 
+    display: block; 
+  }
+  
+  /* Sidebar slides in from left on mobile */
+  .sidebar { 
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    z-index: 50;
+    transition: left 0.3s ease;
+    box-shadow: none;
+  }
+  
+  /* Show sidebar when toggled */
+  body.show-sidebar .sidebar {
+    left: 0;
+    box-shadow: 0 0 20px rgba(0,0,0,0.2);
+  }
+  
+  /* Hide chat when sidebar is open */
+  body.show-sidebar .chat { 
+    display: none; 
+  }
+  
+  .chat { 
+    border-left: none;
+    width: 100%;
+  }
+  
+  /* Show back button on mobile */
+  .chat-header .go-back-btn {
+    display: block;
+    margin-right: 8px;
+  }
+  
+  /* Better mobile message sizing */
+  .msg {
+    max-width: 85%;
+  }
+}
+
+/* Desktop: hide back button */
+@media (min-width: 981px) {
+  .chat { display: grid; }
+  .chat-header .go-back-btn {
+    display: none;
+  }
+}
+
+/* Custom Scrollbars */
+.chats::-webkit-scrollbar,
+.messages::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chats::-webkit-scrollbar-track,
+.messages::-webkit-scrollbar-track {
+  background: var(--panel-2);
+}
+
+.chats::-webkit-scrollbar-thumb,
+.messages::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+.chats::-webkit-scrollbar-thumb:hover,
+.messages::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
+}
+
+
+/* Spinner */
+/* chat.css */
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5); /* semi-transparent background */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  flex-direction: column;
+}
+
+.loading-spinner {
+  border: 6px solid #f3f3f3; /* light gray */
+  border-top: 6px solid #3498db; /* blue spinner */
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 12px;
+}
+
+.loading-text {
+  color: white;
+  font-size: 1.2rem;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+
+
+
+
+
+
+
+
+// dash
+
+
+import { useEffect, useState, useRef } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
+import {
+  MdOutlineModeNight,
+  MdOutlineWbSunny,
+  MdOutlineDelete,
+  MdOutlineEdit,
+  MdOutlineReply,
+  MdClose,
+  MdMenu,
+  MdArrowBackIos
+} from 'react-icons/md';
+import { MdSend } from 'react-icons/md';
 
-export const Dashboard=()=>{
-    const [app, setApp] = useState([]);
-    const URL = `${import.meta.env.VITE_API_URL}/app`;
-      const user = JSON.parse(localStorage.getItem("user"));
-      const navigate = useNavigate();
+import './chat.css';  
 
-    const fetchData = async()=>{
-        try{
-            const res = await axios.get(URL);
-            setApp(res.data);
-        }catch(err){
-            console.log(err.response?.data?.error);
-        };
+const URL = `${import.meta.env.VITE_API_URL}`;
+
+export const Dashboard = () => {
+  const [messages, setMessages] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [msgInput, setMsgInput] = useState("");
+  const [editInfo, setEditInfo] = useState(null);
+  const [editMsg, setEditMsg] = useState("");
+  const [replyingTo, setReplyingTo] = useState(null);
+  const [replyInputs, setReplyInputs] = useState({});
+  const [selectedChat, setSelectedChat] = useState({ type: "general", data: null });
+  const [loading, setLoading] = useState(false); // NEW: loading state
+
+  const user = JSON.parse(localStorage.getItem("user"));
+  const navigate = useNavigate();
+  const messagesEndRef = useRef();
+  const lastRef = useRef(null);
+
+  // Protect route: redirect if not logged in
+  if (!user) return <Navigate to="/login" />;
+
+  const fetchMessages = async () => {
+    try {
+      let res;
+      if (selectedChat.type === "general") {
+        res = await axios.get(`${URL}/messages/general`);
+      } else if (selectedChat.type === "private") {
+        res = await axios.get(`${URL}/messages/private/${selectedChat.data.id}`, {
+          params: { currentUserId: user.id }
+        });
+      }
+      setMessages(res.data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const res = await axios.get(`${URL}/users`);
+      setUsers(res.data.filter(u => u.id !== user.id));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => { fetchUsers(); }, []);
+ useEffect(() => { fetchMessages(); }, [selectedChat]);
+
+
+  useEffect(() => {
+    if (lastRef.current === "load") {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
+    lastRef.current = null;
+  }, [messages]);
+
+  useEffect(()=>{ lastRef.current = "load"; }, []);
+
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (!msgInput.trim()){
+       alert("Field cannot be empty!");
+      return;
     };
 
-    const logout=()=>{
-        localStorage.removeItem("user");
-        navigate("/login")
+    setLoading(true);
+    try {
+      const payload = { sender_id: user.id, message: msgInput, replyTo: null };
+      if (selectedChat.type === "general") {
+        await axios.post(`${URL}/messages/general`, payload);
+      } else {
+        await axios.post(`${URL}/messages/private`, { ...payload, recipient_id: selectedChat.data.id });
+      }
+      lastRef.current = "load";
+      setMsgInput("");
+      await fetchMessages();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    useEffect(()=>{
-        fetchData();
-    }, []);
+  const handleSendReply = async (e, msg) => {
+    e.preventDefault();
+    const replyText = replyInputs[msg.id];
+    if (!replyText || !replyText.trim()) return;
 
-    return(
-        <>
-        <h1>My App</h1>
-        <button onClick={logout}>Logout</button><br /><br />
-        {
-            app.map((e)=>(
-                <li key={e.id}>
-                    {/* <b>{e.name}:</b> <i>{e.message}</i> */}
-                    <b>{user.username == e.name ? e.name = "Me" : e.name}:</b>  <i>{e.message}</i>
-                </li>
-            ))
-        }
-        </>
-    )
-}
-// enddashnoard
+    setLoading(true);
+    try {
+      const payload = { sender_id: user.id, message: replyText, replyTo: msg.id };
+      if (selectedChat.type === "general") {
+        await axios.post(`${URL}/messages/general`, payload);
+        lastRef.current = "load";
+      } else {
+        await axios.post(`${URL}/messages/private`, { ...payload, recipient_id: selectedChat.data.id });
+      }
 
-// startserver.js
-const express = require("express");
-const cors = require("cors");
-const bodyParser = require("body-parser");
-const db = require("./db");
-const route = require("./routes/authRoute");
+      setReplyInputs(prev => ({ ...prev, [msg.id]: "" }));
+      setReplyingTo(null);
+      await fetchMessages();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-const PORT = process.env.PORT || 5000;  
+  const handleEdit = async (e) => {
+    e.preventDefault();
+    if (!editMsg.trim()){
+      alert("Field cannot be empty!");
+      return;
+    };
+
+    setLoading(true);
+    try {
+      await axios.put(`${URL}/messages/${editInfo.id}`, { message: editMsg });
+      setEditInfo(null);
+      setEditMsg("");
+      await fetchMessages();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDelete = async (id) => {
+    setLoading(true);
+    try {
+      await axios.delete(`${URL}/messages/${id}`);
+      await fetchMessages();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    navigate("/login");
+  };
+
+  const getInitials = (name) => !name ? "??" : name.split(" ").map(n => n[0]).join("").toUpperCase();
+
+  const toggleTheme = () => {
+    document.body.classList.toggle('dark');
+    localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+  };
+
+  const toggleSidebar = () => { document.body.classList.toggle('show-sidebar'); };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage(e);
+    }
+  };
+
+  return (
+    <div className="app">
+      {/* loading overlay */}
+      {loading && (
+        <div className="loading-overlay">
+          <div className="loading-text">Loading...</div>
+        </div>
+      )}
+
+      {/* topbar */}
+      <div className="topbar">
+        <div className="brand">
+          <button className="menu-btn" onClick={toggleSidebar}><MdMenu /></button>
+          <div className="logo d-none d-lg-block px-2">Welcome</div>
+          <span>{user.username.toUpperCase()}</span>
+        </div>
+        <div className="actions mx-1">
+          <button className="icon-btn" onClick={toggleTheme}>
+            <MdOutlineModeNight className="dark-icon" style={{ display: document.body.classList.contains('dark') ? 'block' : 'none' }} />
+            <MdOutlineWbSunny className="light-icon" style={{ display: document.body.classList.contains('dark') ? 'none' : 'block' }} />
+          </button>
+          <button className="icon-btn text-danger" onClick={handleLogout}>Logout</button>
+        </div>
+      </div>
+
+      <div className="main">
+        {/* sidebar */}
+        <aside className="sidebar">
+          <div className="chats">
+            <div className={`chat-item ${selectedChat.type === 'general' ? 'active' : ''}`}
+              onClick={() => { setSelectedChat({ type: "general", data: null }); toggleSidebar(); }}>
+              <div className="avatar">GC</div>
+              <div>
+                <div className="name">General Chat</div>
+                <div className="preview">Public messages...</div>
+              </div>
+            </div>
+            {users.map(u => (
+              <div key={u.id} className={`chat-item ${selectedChat.type === 'private' && selectedChat.data.id === u.id ? 'active' : ''}`}
+                onClick={() => { setSelectedChat({ type: "private", data: u }); toggleSidebar(); }}>
+                <div className="avatar">{getInitials(u.username)}</div>
+                <div>
+                  <div className="name">{u.username}</div>
+                  <div className="preview">Start a private chat....</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </aside>
+
+        {/* chat section */}
+        <section className="chat">
+          <div className="chat-header">
+            <button className="go-back-btn" onClick={toggleSidebar}><MdArrowBackIos /></button>
+            <div className="avatar" style={{ width: 'fit-content', height: '38px' }}>
+              {selectedChat.type === 'general' ? 'GC' : selectedChat.data.username}
+            </div>
+            <div className="title">
+              <div className="name">
+                {selectedChat.type === 'general' ? 'General Chat' : selectedChat.data.username}
+              </div>
+            </div>
+          </div>
+
+          <div className="messages">
+            {messages.map(m => {
+              const isUserMessage = m.sender_id === user.id;
+              const replyMessage = m.replyto ? messages.find(msg => msg.id === m.replyto) : null;
+              const isEditing = editInfo?.id === m.id;
+              const truncate = (text, length) => text.length > length ? text.slice(0, length) + "..." : text;
+
+              return (
+                <div key={m.id} className={`msg ${isUserMessage ? 'from-me' : ''} ${replyMessage ? 'reply' : ''}`}>
+                  {isEditing ? (
+                    <form onSubmit={handleEdit}>
+                      <input type="text" className=" form-control" value={editMsg} onChange={(e) => setEditMsg(e.target.value)} rows="1" style={{ width: '100%' }} />
+                      <button type="submit" className="mt-2 py-2 alert alert-primary"><MdSend /></button>
+                      <button type="button" className="ms-5 py-2 alert alert-danger" onClick={() => setEditInfo(null)}><MdClose /></button>
+                    </form>
+                  ) : (
+                    <>
+                      {replyMessage && (
+                        <div className="reply-preview  text-warning">
+                          <i>
+                            <div className="reply-preview-header">
+                              Replying to: {truncate(replyMessage.sender_id === user.id ? "You" : replyMessage.sender_name, 10)}
+                            </div>
+                            <div className="reply-preview-message">
+                              {truncate(replyMessage.message, 20)}
+                            </div>
+                          </i>
+                        </div>
+                      )}
+
+                      <div className="bubble-row">
+                        <div className="bubble ">
+                          <span className="sender-name">{isUserMessage ? 'You: ' : `${m.sender_name}: `}</span>
+                          {m.message}
+                        </div>
+                        <div className="actions" >
+                          {!isUserMessage && (
+                            <button style={{backgroundColor:"bisque"}} className="icon-btn text-black" onClick={() => setReplyingTo(m)} title="Reply"><MdOutlineReply /></button>
+                          )}
+                          {isUserMessage && (
+                            <button style={{backgroundColor:"bisque"}} className="icon-btn text-black" onClick={() => { setEditInfo(m); setEditMsg(m.message); }} title="Edit"><MdOutlineEdit /></button>
+                          )}
+                          <button style={{backgroundColor:"bisque"}} className="icon-btn text-danger mx-3" onClick={() => handleDelete(m.id)} title="Delete"><MdOutlineDelete /></button>
+                        </div>
+                      </div>
+
+                      {replyingTo?.id === m.id && (
+                        <form className="reply-box" onSubmit={(e) => handleSendReply(e, m)}>
+                          <input
+                            type="text"
+                            className="form-control"
+                            placeholder={`Reply to ${m.sender_name}...`}
+                            value={replyInputs[m.id] || ""}
+                            onChange={(e) => setReplyInputs(prev => ({ ...prev, [m.id]: e.target.value }))}
+                          />
+                          <button type="submit" className="send mt-2 py-2 alert alert-primary" disabled={!replyInputs[m.id]?.trim()}><MdSend /></button>
+                          <button type="button" className="close-pill ms-5 py-2 alert alert-danger" onClick={() => setReplyingTo(null)}><MdClose /></button>
+                        </form>
+                      )}
+
+                      <div className="meta">
+                        <span>
+                          {new Date(m.created_at).toLocaleString("en-US", {
+                            day: "2-digit",
+                            month: "short",  // or "long" if you want full month name
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit"
+                          })}
+                        </span>
+                        {isUserMessage && <span> ✓✓</span>}
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })}
+            <div ref={messagesEndRef} />
+          </div>
+
+          {/* main composer */}
+          <form className="composer" onSubmit={handleSendMessage}>
+            <textarea className=" form-control border border-4" value={msgInput} onChange={(e) => setMsgInput(e.target.value)} onKeyDown={handleKeyDown} placeholder="Message..." rows={1} />                            
+            <button type="submit" className="send">➤<MdSend className="send-icon" /></button>
+             {/* disabled={!msgInput.trim()} */}
+          </form>
+        </section>
+      </div>
+    </div>
+  );
+};
+
+// ser ver
+
+
+import express from "express";
+import cors from "cors";
+import bodyParser from "body-parser";
+import dotenv from "dotenv";
+import sql from "./db.js"; // ✅ PostgreSQL connection
+import authRoutes from "./routes/authRoutes.js"; // ✅ login/signup routes
+
+dotenv.config();
 
 const app = express();
+const PORT = process.env.PORT || 5000;
 
-app.use(cors());
+// ✅ CORS setup for local + Render frontend
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://frontend-xi-lilac-17.vercel.app/" // ✅ add this
+];
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+
+      // ✅ Allow localhost + any vercel.app subdomain
+      if (
+        origin.includes("localhost:5173") ||
+        /\.vercel\.app$/.test(new URL(origin).hostname)
+      ) {
+        return callback(null, true);
+      }
+
+      const msg = `CORS policy: No access from origin ${origin}`;
+      return callback(new Error(msg), false);
+    },
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
+
+app.options("*", cors()); // ✅ Handle preflight
 app.use(bodyParser.json());
-app.use(route);
 
-app.get("/app", (req, res)=>{
-    db.query("SELECT * FROM tasks", (err, result)=>{
-        if(err) return res.status(500).json({error:err.message});
-        res.json(result);
-    });
+// ✅ Health check
+app.get("/health", (req, res) => {
+  res.send("Backend is running 🚀");
 });
 
-app.listen(PORT, ()=>{
-    console.log("Listening on port", PORT);
-}); 
-// endsever
-
-// auth
-const express = require("express");
-const db = require("../db");
-
-const route = express.Router();
-
-route.post("/signup", (req, res)=>{
-    const {username, password} = req.body;
-    const query = "INSERT INTO users2 (username, password) VALUE(?, ?)";
-    db.query(query, [username, password], (err, result)=>{
-        if(err.code === "ER_DUP_ENTRY") return res.status(400).json({error:"Username already exist!"});
-         if(err) return res.status(500).json({error:err.message});
-        res.status(201).json({id:result.insertId});
-    });
+app.get("/", (req, res) => {
+  res.send("Backend is running ✅");
 });
 
-    route.post("/login", (req, res)=>{
-        const {username, password} = req.body;
-        const query = "SELECT * FROM users2 WHERE username = ? AND password = ?";
-        db.query(query, [username, password], (err, result)=>{
-             if(err) return res.status(500).json({error:err.message});
-             if(result.length === 0) return res.status(401).json({error:"Incorrect email or password"});
 
-             const user = result[0];
-             res.json({user: {id:user.id, username:user.username}});
-        })
-    })
+// ✅ Auth routes (signup/login)
+app.use("/", authRoutes);
 
-module.exports = route;
-// endauth
+// ✅ Get all users
+app.get("/users", async (req, res) => {
+  try {
+    const result = await sql`SELECT id, username FROM users2`;
+    res.status(200).json(result);
+  } catch (err) {
+    console.error("❌ Database error:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
 
-// ➤
+// ✅ General messages (with reply info)
+app.get("/messages/general", async (req, res) => {
+  try {
+    const result = await sql`
+      SELECT 
+        m.*,
+        u.username AS sender_name,
+        parent.message AS reply_message,
+        parentUser.username AS reply_sender
+      FROM messages m
+      JOIN users2 u ON m.sender_id = u.id
+      LEFT JOIN messages parent ON m.replyTo = parent.id
+      LEFT JOIN users2 parentUser ON parent.sender_id = parentUser.id
+      WHERE m.recipient_id IS NULL
+      ORDER BY m.created_at ASC
+    `;
+    res.status(200).json(result);
+  } catch (err) {
+    console.error("❌ Database error:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ✅ Private messages (with reply info)
+app.get("/messages/private/:otherUserId", async (req, res) => {
+  const { otherUserId } = req.params;
+  const { currentUserId } = req.query;
+
+  if (!currentUserId) {
+    return res.status(400).json({ error: "currentUserId is required" });
+  }
+
+  try {
+    const result = await sql`
+      SELECT 
+        m.*,
+        u.username AS sender_name,
+        parent.message AS reply_message,
+        parentUser.username AS reply_sender
+      FROM messages m
+      JOIN users2 u ON m.sender_id = u.id
+      LEFT JOIN messages parent ON m.replyTo = parent.id
+      LEFT JOIN users2 parentUser ON parent.sender_id = parentUser.id
+      WHERE (m.sender_id = ${currentUserId} AND m.recipient_id = ${otherUserId})
+         OR (m.sender_id = ${otherUserId} AND m.recipient_id = ${currentUserId})
+      ORDER BY m.created_at ASC
+    `;
+    res.status(200).json(result);
+  } catch (err) {
+    console.error("❌ Database error:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ✅ Post general message
+app.post("/messages/general", async (req, res) => {
+  const { sender_id, message, replyTo } = req.body;
+
+  if (!sender_id || !message) {
+    return res.status(400).json({ error: "Sender ID and message are required" });
+  }
+
+  try {
+    const result = await sql`
+      INSERT INTO messages (sender_id, recipient_id, message, replyTo, created_at)
+      VALUES (${sender_id}, NULL, ${message}, ${replyTo || null}, NOW())
+      RETURNING *
+    `;
+    res.status(201).json(result[0]);
+  } catch (err) {
+    console.error("❌ Database error:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ✅ Post private message
+app.post("/messages/private", async (req, res) => {
+  const { sender_id, recipient_id, message, replyTo } = req.body;
+
+  if (!sender_id || !recipient_id || !message) {
+    return res.status(400).json({ error: "Sender ID, Recipient ID, and message are required" });
+  }
+
+  try {
+    const result = await sql`
+      INSERT INTO messages (sender_id, recipient_id, message, replyTo, created_at)
+      VALUES (${sender_id}, ${recipient_id}, ${message}, ${replyTo || null}, NOW())
+      RETURNING *
+    `;
+    res.status(201).json(result[0]);
+  } catch (err) {
+    console.error("❌ Database error:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ✅ Edit message
+app.put("/messages/:id", async (req, res) => {
+  const { id } = req.params;
+  const { message } = req.body;
+
+  if (!message) {
+    return res.status(400).json({ error: "Message is required" });
+  }
+
+  try {
+    const result = await sql`
+      UPDATE messages SET message = ${message}
+      WHERE id = ${id}
+      RETURNING *
+    `;
+    if (result.length === 0) {
+      return res.status(404).json({ error: "Message not found" });
+    }
+    res.json(result[0]); 
+  } catch (err) {
+    console.error("❌ Database error:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+//  Delete message
+app.delete("/messages/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const result = await sql`DELETE FROM messages WHERE id = ${id} RETURNING *`;
+    if (result.length === 0) {
+      return res.status(404).json({ error: "Message not found" });
+    }
+    res.json({ message: "Message deleted successfully!" });
+  } catch (err) {
+    console.error("❌ Database error:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ✅ Catch unhandled errors
+app.use((err, req, res, next) => {
+  console.error("Unhandled error:", err);
+  res.status(500).json({ error: "Internal server error" });
+});
+
+// ✅ 404 fallback
+app.use((req, res) => {
+  console.log("Route not found:", req.method, req.path);
+  res.status(404).json({ error: "Route not found" });
+});
+
+// // Debug: list all registered routes
+// const listRoutes = (app) => {
+//   app._router.stack.forEach((middleware) => {
+//     if (middleware.route) {
+//       // Routes registered directly on the app
+//       console.log("Route:", middleware.route.path);
+//     } else if (middleware.name === "router") {
+//       // Routes added via router.use()
+//       middleware.handle.stack.forEach((handler) => {
+//         if (handler.route) {
+//           console.log("Route:", handler.route.path);
+//         }
+//       });
+//     }
+//   });
+// };
+
+// listRoutes(app);
+
+
+// ✅ Start server
+app.listen(PORT, () => {
+  console.log(`🚀 Server listening on port: ${PORT}`);
+});
+

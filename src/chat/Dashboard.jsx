@@ -62,7 +62,8 @@ export const Dashboard = () => {
   };
 
   useEffect(() => { fetchUsers(); }, []);
-  useEffect(() => { fetchMessages(); }, [selectedChat]);
+ useEffect(() => { fetchMessages(); }, [selectedChat]);
+
 
   useEffect(() => {
     if (lastRef.current === "load") {
