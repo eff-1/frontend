@@ -35,6 +35,9 @@ export const Dashboard = () => {
   const [typingUsers, setTypingUsers] = useState(new Map()); // chatId -> Set of userIds
   const [messageStatuses, setMessageStatuses] = useState({}); // tempId -> status
   const [isTyping, setIsTyping] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState('connecting');
+  const [unreadCounts, setUnreadCounts] = useState(new Map()); // chatId -> count
+  const [lastSeen, setLastSeen] = useState(new Map()); // chatId -> lastMessageId
 
   const user = JSON.parse(localStorage.getItem("user"));
   const navigate = useNavigate();
@@ -54,23 +57,81 @@ export const Dashboard = () => {
 
     socketInstance.on('connect', () => {
       console.log('Connected to server');
+      setConnectionStatus('connected');
       socketInstance.emit('user-online', user.id);
     });
 
     socketInstance.on('disconnect', () => {
       console.log('Disconnected from server');
+      setConnectionStatus('disconnected');
     });
 
-    // Handle new messages
+    socketInstance.on('reconnecting', () => {
+      setConnectionStatus('reconnecting');
+    });
+
+    // Play notification sound
+    const playNotificationSound = () => {
+      try {
+        // Create audio context for notification sound
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+        oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
+        
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.3);
+      } catch (err) {
+        console.log('Could not play notification sound');
+      }
+    };
+
+    // Handle new messages with proper routing
     socketInstance.on('new-message', (message) => {
-      setMessages(prev => {
-        // Check if message already exists (avoid duplicates)
-        if (prev.some(m => m.id === message.id)) {
-          return prev;
-        }
-        return [...prev, message];
-      });
-      lastRef.current = "load";
+      const currentChatKey = selectedChat.type === 'general' 
+        ? 'general' 
+        : `private_${Math.min(user.id, selectedChat.data?.id)}_${Math.max(user.id, selectedChat.data?.id)}`;
+      
+      const messageChatKey = message.recipient_id === null
+        ? 'general'
+        : `private_${Math.min(message.sender_id, message.recipient_id)}_${Math.max(message.sender_id, message.recipient_id)}`;
+
+      // Only add message if it belongs to current chat
+      if (currentChatKey === messageChatKey) {
+        setMessages(prev => {
+          // Check if message already exists (avoid duplicates)
+          if (prev.some(m => m.id === message.id)) {
+            return prev;
+          }
+          return [...prev, message];
+        });
+        lastRef.current = "load";
+      } else {
+        // Message is for different chat - increment unread count
+        const chatId = message.recipient_id === null ? 'general' : (
+          message.sender_id === user.id ? message.recipient_id : message.sender_id
+        );
+        
+        setUnreadCounts(prev => {
+          const newMap = new Map(prev);
+          const current = newMap.get(chatId) || 0;
+          newMap.set(chatId, current + 1);
+          return newMap;
+        });
+      }
+
+      // Play sound for new messages (not from current user)
+      if (message.sender_id !== user.id) {
+        playNotificationSound();
+      }
     });
 
     // Handle message delivery confirmation
@@ -78,11 +139,22 @@ export const Dashboard = () => {
       setMessages(prev => 
         prev.map(msg => 
           msg.id === tempId 
-            ? { ...msg, id: messageId, status } 
+            ? { ...msg, id: messageId, status: 'delivered' } 
             : msg
         )
       );
-      setMessageStatuses(prev => ({ ...prev, [tempId]: status }));
+      setMessageStatuses(prev => ({ ...prev, [tempId]: 'delivered' }));
+    });
+
+    // Handle message read receipts
+    socketInstance.on('message-read', ({ messageId, readBy }) => {
+      setMessages(prev => 
+        prev.map(msg => 
+          msg.id === messageId 
+            ? { ...msg, status: 'read', readBy } 
+            : msg
+        )
+      );
     });
 
     // Handle message errors
@@ -96,7 +168,7 @@ export const Dashboard = () => {
       );
     });
 
-    // Handle typing indicators
+    // Handle typing indicators (only for current chat)
     socketInstance.on('user-typing', ({ userId, typing, chatType, chatId }) => {
       const currentChatKey = selectedChat.type === 'general' 
         ? 'general' 
@@ -164,16 +236,28 @@ export const Dashboard = () => {
     return () => {
       socketInstance.disconnect();
     };
-  }, [user.id]);
+  }, [user.id, selectedChat]);
 
   const fetchMessages = async () => {
     try {
       let res;
       if (selectedChat.type === "general") {
         res = await axios.get(`${URL}/messages/general`);
+        // Clear unread count for general chat
+        setUnreadCounts(prev => {
+          const newMap = new Map(prev);
+          newMap.delete('general');
+          return newMap;
+        });
       } else if (selectedChat.type === "private") {
         res = await axios.get(`${URL}/messages/private/${selectedChat.data.id}`, {
           params: { currentUserId: user.id }
+        });
+        // Clear unread count for this private chat
+        setUnreadCounts(prev => {
+          const newMap = new Map(prev);
+          newMap.delete(selectedChat.data.id);
+          return newMap;
         });
       }
       setMessages(res.data);
@@ -461,6 +545,22 @@ export const Dashboard = () => {
 
   return (
     <div className="app">
+      {/* Connection Status Overlay */}
+      {connectionStatus !== 'connected' && (
+        <div className={`connection-overlay ${connectionStatus}`}>
+          <div className="connection-content">
+            <div className="connection-spinner"></div>
+            <div className="connection-text">
+              {connectionStatus === 'reconnecting' ? 'Reconnecting...' : 
+               connectionStatus === 'disconnected' ? 'No Internet Connection' : 'Connecting...'}
+            </div>
+            <div className="connection-subtitle">
+              {connectionStatus === 'disconnected' ? 'Check your internet and try again' : 'Please wait...'}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* loading overlay */}
       {loading && (
         <div className="loading-overlay">
@@ -491,26 +591,37 @@ export const Dashboard = () => {
             <div className={`chat-item ${selectedChat.type === 'general' ? 'active' : ''}`}
               onClick={() => { setSelectedChat({ type: "general", data: null }); toggleSidebar(); }}>
               <div className="avatar">GC</div>
-              <div>
-                <div className="name">General Chat</div>
+              <div className="chat-item-info">
+                <div className="name">
+                  General Chat
+                  {unreadCounts.get('general') > 0 && (
+                    <span className="unread-badge">{unreadCounts.get('general')}</span>
+                  )}
+                </div>
                 <div className="preview">Public messages...</div>
               </div>
             </div>
-            {users.map(u => (
-              <div key={u.id} className={`chat-item ${selectedChat.type === 'private' && selectedChat.data.id === u.id ? 'active' : ''}`}
-                onClick={() => { setSelectedChat({ type: "private", data: u }); toggleSidebar(); }}>
-                <div className="avatar">{getInitials(u.username)}</div>
-                <div className="chat-item-info">
-                  <div className="name">
-                    {u.username}
-                    {onlineUsers.has(u.id) && <span className="online-dot"></span>}
-                  </div>
-                  <div className="preview">
-                    {onlineUsers.has(u.id) ? 'Online' : 'Start a private chat...'}
+            {users.map(u => {
+              const unreadCount = unreadCounts.get(u.id) || 0;
+              return (
+                <div key={u.id} className={`chat-item ${selectedChat.type === 'private' && selectedChat.data.id === u.id ? 'active' : ''}`}
+                  onClick={() => { setSelectedChat({ type: "private", data: u }); toggleSidebar(); }}>
+                  <div className="avatar">{getInitials(u.username)}</div>
+                  <div className="chat-item-info">
+                    <div className="name">
+                      {u.username}
+                      {onlineUsers.has(u.id) && <span className="online-dot"></span>}
+                      {unreadCount > 0 && (
+                        <span className="unread-badge">{unreadCount}</span>
+                      )}
+                    </div>
+                    <div className="preview">
+                      {onlineUsers.has(u.id) ? 'Online' : 'Start a private chat...'}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </aside>
 
@@ -615,10 +726,11 @@ export const Dashboard = () => {
                           })}
                         </span>
                         {isUserMessage && (
-                          <span className={`message-status ${m.status || 'sent'}`}>
-                            {m.status === 'sending' && ' ⏳'}
+                          <span className={`message-status ${m.status || 'delivered'}`}>
+                            {m.status === 'sending' && ' ↺'}
                             {m.status === 'sent' && ' ✓'}
                             {m.status === 'delivered' && ' ✓✓'}
+                            {m.status === 'read' && ' ✓✓'}
                             {m.status === 'error' && ' ❌'}
                             {!m.status && ' ✓✓'}
                           </span>

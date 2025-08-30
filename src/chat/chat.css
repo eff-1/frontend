@@ -142,6 +142,505 @@ body {
 
 
 
+
+/* Add these styles to your existing chat.css file */
+
+/* Unread Message Badges */
+.unread-badge {
+  background: #EF4444;
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 10px;
+  margin-left: auto;
+  min-width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: badgePulse 0.3s ease-out;
+}
+
+@keyframes badgePulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Connection Status Overlay */
+.connection-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  backdrop-filter: blur(4px);
+}
+
+.connection-overlay.reconnecting {
+  background: rgba(245, 158, 11, 0.9);
+}
+
+.connection-overlay.disconnected {
+  background: rgba(239, 68, 68, 0.9);
+}
+
+.connection-content {
+  text-align: center;
+  color: white;
+  padding: 32px;
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(8px);
+  max-width: 320px;
+}
+
+.connection-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  border-top: 4px solid white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px;
+}
+
+.connection-text {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.connection-subtitle {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+/* Message Status Icons - Better Styling */
+.message-status {
+  font-size: 14px;
+  margin-left: 4px;
+  font-weight: 500;
+}
+
+.message-status.sending {
+  color: var(--warning);
+  animation: rotate 1s linear infinite;
+}
+
+.message-status.sent {
+  color: #9CA3AF;
+}
+
+.message-status.delivered,
+.message-status.read {
+  color: #10B981;
+}
+
+.message-status.error {
+  color: var(--danger);
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Enhanced Chat Item Layout */
+.chat-item {
+  display: grid;
+  grid-template-columns: 48px 1fr auto;
+  gap: 12px;
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+  align-items: center;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.chat-item-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.chat-item-info .name {
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  gap: 8px;
+}
+
+.chat-item-info .preview {
+  color: var(--muted);
+  font-size: 14px;
+  margin-top: 4px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* Online Status Indicator */
+.online-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: #10B981;
+  border-radius: 50%;
+  margin-left: 8px;
+  position: relative;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(16, 185, 129, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+/* Chat Item Info Container - REMOVED DUPLICATE */
+
+/* Typing Indicator */
+.typing-indicator {
+  font-size: 12px;
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 2px;
+  font-style: italic;
+}
+
+/* Typing Dots Animation */
+.typing-dots {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.typing-dots span {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: typing 1.4s infinite ease-in-out;
+}
+
+.typing-dots span:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.typing-dots span:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+.typing-dots span:nth-child(3) {
+  animation-delay: 0s;
+}
+
+@keyframes typing {
+  0%, 80%, 100% {
+    transform: scale(0.8);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Message Status Styling */
+.message-status {
+  font-size: 12px;
+  margin-left: 4px;
+}
+
+.message-status.sending {
+  color: var(--warning);
+}
+
+.message-status.sent {
+  color: var(--muted);
+}
+
+.message-status.delivered {
+  color: var(--info);
+}
+
+.message-status.error {
+  color: var(--danger);
+}
+
+/* Message Send Animation */
+@keyframes messageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.msg {
+  animation: messageSlideIn 0.3s ease-out;
+}
+
+/* Loading State for Optimistic Messages */
+.msg.sending {
+  opacity: 0.7;
+  position: relative;
+}
+
+.msg.sending::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--border);
+  border-top: 2px solid var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  transform: translateY(-50%);
+}
+
+.msg.from-me.sending::after {
+  left: 8px;
+  right: auto;
+  border-color: rgba(255,255,255,0.3);
+  border-top-color: rgba(255,255,255,0.8);
+}
+
+/* Error Message Styling */
+.msg.error {
+  border-left: 3px solid var(--danger);
+  background: rgba(239, 68, 68, 0.05);
+}
+
+.msg.from-me.error {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Enhanced Chat Header */
+.chat-header .title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.chat-header .name {
+  display: flex;
+  align-items: center;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+/* Better Online Status in Sidebar */
+.chat-item {
+  position: relative;
+}
+
+.chat-item .name {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Improved Message Bubbles */
+.msg .bubble-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.msg .bubble {
+  flex: 1;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* Reply Box Styling */
+.reply-box {
+  margin-top: 8px;
+  padding: 8px;
+  background: var(--panel-2);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.reply-box input {
+  margin-bottom: 8px;
+}
+
+/* Connection Status Indicator */
+.connection-status {
+  position: fixed;
+  top: 60px;
+  right: 16px;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  z-index: 1000;
+  transition: all 0.3s ease;
+}
+
+.connection-status.connected {
+  background: #10B981;
+  color: white;
+}
+
+.connection-status.disconnected {
+  background: var(--danger);
+  color: white;
+}
+
+.connection-status.reconnecting {
+  background: var(--warning);
+  color: white;
+}
+
+/* Smooth Transitions for Real-time Updates */
+.chat-item,
+.msg,
+.typing-indicator {
+  transition: all 0.2s ease;
+}
+
+/* Enhanced Hover Effects */
+.chat-item:hover {
+  background: var(--panel-2);
+  transform: translateX(2px);
+}
+
+.msg:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow), 0 4px 12px rgba(0,0,0,0.1);
+}
+
+/* Better Mobile Responsiveness for New Features */
+@media (max-width: 980px) {
+  .typing-indicator {
+    font-size: 11px;
+  }
+  
+  .online-dot {
+    width: 6px;
+    height: 6px;
+  }
+  
+  .typing-dots span {
+    width: 3px;
+    height: 3px;
+  }
+  
+  .connection-status {
+    top: 56px;
+    right: 12px;
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+}
+
+/* Dark Mode Adjustments */
+body.dark .msg.error {
+  background: rgba(248, 113, 113, 0.1);
+  border-left-color: #F87171;
+}
+
+body.dark .msg.from-me.error {
+  background: rgba(248, 113, 113, 0.15);
+}
+
+body.dark .reply-box {
+  background: var(--panel);
+  border-color: var(--border);
+}
+
+/* Accessibility Improvements */
+@media (prefers-reduced-motion: reduce) {
+  .msg,
+  .typing-dots span,
+  .online-dot,
+  .msg.sending::after {
+    animation: none;
+  }
+  
+  .chat-item:hover,
+  .msg:hover {
+    transform: none;
+  }
+}
+
+/* Focus States for Better Accessibility */
+.chat-item:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.composer textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Loading Overlay for Socket Connection */
+.socket-connecting {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.socket-connecting .spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--border);
+  border-top: 3px solid var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.socket-connecting .text {
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+
 /* Add these styles to your existing chat.css file */
 
 /* Online Status Indicator */
