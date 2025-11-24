@@ -159,6 +159,12 @@ const Dashboard = () => {
         setNotifications(prev => prev.filter(n => n.id !== id));
       }, 5000);
     }
+    
+    return id; // Return ID so we can remove specific notifications
+  };
+  
+  const removeNotification = (id) => {
+    setNotifications(prev => prev.filter(n => n.id !== id));
   };
 
   const scrollToMessage = (messageId) => {
@@ -231,9 +237,15 @@ const Dashboard = () => {
 
     socketInstance.on('message-delivered', ({ tempId, messageId, status }) => {
       setMessages(prev => prev.map(msg => 
-        msg.id === tempId ? { ...msg, id: messageId, status: 'delivered' } : msg
+        msg.id === tempId ? { ...msg, id: messageId, status: 'sent' } : msg
       ));
       setActionLoading(null);
+    });
+    
+    socketInstance.on('message-seen', ({ messageId, seenBy }) => {
+      setMessages(prev => prev.map(msg => 
+        msg.id === messageId ? { ...msg, status: 'seen', seenBy } : msg
+      ));
     });
 
     socketInstance.on('message-deleted', ({ messageId }) => {
@@ -242,6 +254,7 @@ const Dashboard = () => {
       setNotifications(prev => prev.filter(n => n.type !== 'process'));
       addNotification('Message deleted successfully', 'success');
       playSound('success');
+      setShowDeleteModal(null);
     });
 
     socketInstance.on('message-edited', (updatedMessage) => {
@@ -503,7 +516,23 @@ const Dashboard = () => {
 
   const handleReaction = (messageId, emoji) => {
     if (socket && socket.connected) {
-      socket.emit('add-reaction', { messageId, emoji, userId: user.id });
+      socket.emit('add-reaction', { 
+        messageId, 
+        emoji, 
+        userId: user.id,
+        username: user.username 
+      });
+      setActiveMenu(null);
+    }
+  };
+  
+  const handleReactionPicker = (messageId) => {
+    setActiveMenu(null);
+    // Show emoji picker - we'll implement this
+    const emojis = ['❤️', '😂', '😮', '😢', '🙏', '👍', '🔥', '🎉'];
+    const emoji = prompt(`Choose reaction:\n${emojis.join(' ')}\n\nOr type your own emoji:`);
+    if (emoji && emoji.trim()) {
+      handleReaction(messageId, emoji.trim());
     }
   };
 
@@ -781,7 +810,7 @@ const Dashboard = () => {
     }
   };
 
-  // FIXED: Proper double tick status
+  // FIXED: Proper message status with correct progression
   const renderMessageStatus = (message) => {
     if (message.sender_id !== user.id) return null;
     
@@ -793,15 +822,15 @@ const Dashboard = () => {
     
     switch (message.status) {
       case 'sending':
-        return <MdAccessTime className="status-sending" />;
+        return <MdAccessTime className="status-sending" title="Sending..." />;
       case 'sent':
-        return <MdCheck className="status-sent" />;
+        return <MdCheck className="status-sent" title="Sent" />;
       case 'delivered':
-        return <MdDoneAll className="status-delivered" />;
+        return <MdDoneAll className="status-delivered" title="Delivered" />;
       case 'seen':
-        return <MdDoneAll className="status-seen" />;
+        return <MdDoneAll className="status-seen" title="Seen" />;
       default:
-        return <MdDoneAll className="status-delivered" />;
+        return <MdCheck className="status-sent" title="Sent" />;
     }
   };
 
@@ -1240,11 +1269,18 @@ const Dashboard = () => {
                                       </button>
                                       
                                       {activeMenu === m.id && (
-                                        <div className="message-menu">
+                                        <div 
+                                          className="message-menu"
+                                          style={{
+                                            // Smart positioning to keep menu visible
+                                            right: isOwn ? 'auto' : '0',
+                                            left: isOwn ? '0' : 'auto',
+                                          }}
+                                        >
                                           <button onClick={() => handleMenuAction('reply', m)}>
                                             <MdOutlineReply /> Reply
                                           </button>
-                                          <button onClick={() => handleMenuAction('react', m)}>
+                                          <button onClick={() => handleReactionPicker(m.id)}>
                                             <MdFavorite /> React
                                           </button>
                                           {isOwn && m.message_type === 'text' && (
@@ -1270,11 +1306,13 @@ const Dashboard = () => {
                                     const existing = acc.find(r => r.emoji === reaction.emoji);
                                     if (existing) {
                                       existing.count++;
+                                      existing.users.push(reaction.username || `User ${reaction.user_id}`);
                                       if (reaction.user_id === user.id) existing.byMe = true;
                                     } else {
                                       acc.push({
                                         emoji: reaction.emoji,
                                         count: 1,
+                                        users: [reaction.username || `User ${reaction.user_id}`],
                                         byMe: reaction.user_id === user.id
                                       });
                                     }
@@ -1284,8 +1322,9 @@ const Dashboard = () => {
                                       key={idx}
                                       className={`reaction ${reaction.byMe ? 'by-me' : ''}`}
                                       onClick={() => handleReaction(m.id, reaction.emoji)}
+                                      title={reaction.users.join(', ')}
                                     >
-                                      {reaction.emoji} {reaction.count}
+                                      {reaction.emoji} {reaction.count > 1 ? reaction.count : ''}
                                     </button>
                                   ))}
                                 </div>
@@ -1308,7 +1347,7 @@ const Dashboard = () => {
                 <MdOutlineReply className="reply-icon" />
                 <div className="reply-details">
                   <span className="reply-to">
-                    Replying to {replyingTo.sender_id === user.id ? 'yourself' : replyingTo. sender_name}
+                    Replying to {replyingTo.sender_id === user.id ? 'yourself' : replyingTo. sender_name} :
                   </span>
                   <span className="reply-preview-text">
                     {replyingTo.message_type === 'text' 
@@ -1326,55 +1365,89 @@ const Dashboard = () => {
 
           <form className="composer" onSubmit={handleSendMessage}>
             {!isRecording && (
-              <div className="mobile-media-menu">
-                <button 
-                  type="button" 
-                  className={`mobile-toggle-btn ${showMediaMenu ? 'active' : ''}`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setShowMediaMenu(!showMediaMenu);
-                  }}
-                  disabled={uploadLoading}
-                  aria-label="Media options"
-                >
-                  <MdAdd />
-                </button>
+              <>
+                {/* Desktop media buttons - always visible */}
+                <div className="desktop-media-buttons">
+                  <button 
+                    type="button" 
+                    className="composer-btn"
+                    onClick={() => imageInputRef.current?.click()}
+                    disabled={uploadLoading}
+                    title="Send image"
+                  >
+                    <MdImage />
+                  </button>
+                  <button 
+                    type="button" 
+                    className="composer-btn"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploadLoading}
+                    title="Send file"
+                  >
+                    <MdAttachFile />
+                  </button>
+                  <button 
+                    type="button" 
+                    className="composer-btn"
+                    onClick={startVoiceRecording}
+                    disabled={uploadLoading}
+                    title="Record voice"
+                  >
+                    <MdMic />
+                  </button>
+                </div>
                 
-                {showMediaMenu && (
-                  <div className="media-options">
-                    <button 
-                      type="button" 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        imageInputRef.current?.click();
-                        setShowMediaMenu(false);
-                      }}
-                    >
-                      <MdImage /> Image
-                    </button>
-                    <button 
-                      type="button" 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        fileInputRef.current?.click();
-                        setShowMediaMenu(false);
-                      }}
-                    >
-                      <MdAttachFile /> File
-                    </button>
-                    <button 
-                      type="button" 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        startVoiceRecording();
-                        setShowMediaMenu(false);
-                      }}
-                    >
-                      <MdMic /> Voice
-                    </button>
-                  </div>
-                )}
-              </div>
+                {/* Mobile media menu - toggle button */}
+                <div className="mobile-media-menu">
+                  <button 
+                    type="button" 
+                    className={`mobile-toggle-btn ${showMediaMenu ? 'active' : ''}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowMediaMenu(!showMediaMenu);
+                    }}
+                    disabled={uploadLoading}
+                    aria-label="Media options"
+                  >
+                    <MdAdd />
+                  </button>
+                  
+                  {showMediaMenu && (
+                    <div className="media-options">
+                      <button 
+                        type="button" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          imageInputRef.current?.click();
+                          setShowMediaMenu(false);
+                        }}
+                      >
+                        <MdImage /> Image
+                      </button>
+                      <button 
+                        type="button" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          fileInputRef.current?.click();
+                          setShowMediaMenu(false);
+                        }}
+                      >
+                        <MdAttachFile /> File
+                      </button>
+                      <button 
+                        type="button" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          startVoiceRecording();
+                          setShowMediaMenu(false);
+                        }}
+                      >
+                        <MdMic /> Voice
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </>
             )}
 
             {isRecording && (
