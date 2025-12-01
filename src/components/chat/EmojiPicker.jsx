@@ -17,7 +17,9 @@ const EmojiPicker = ({ onSelect, onClose, position = 'bottom' }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const filteredEmojis = searchQuery
-    ? Object.values(EMOJI_CATEGORIES).flat().filter(emoji => emoji.includes(searchQuery))
+    ? Object.values(EMOJI_CATEGORIES).flat().filter(emoji => 
+        emoji.toLowerCase().includes(searchQuery.toLowerCase())
+      )
     : EMOJI_CATEGORIES[activeCategory];
 
   return (

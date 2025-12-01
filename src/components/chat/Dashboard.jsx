@@ -3,6 +3,7 @@ import { useNavigate, Navigate } from "react-router-dom";
 import axios from "axios";
 import io from 'socket.io-client';
 import EmojiPicker from './EmojiPicker';
+import ReactionInfo from './ReactionInfo';
 import {
   MdOutlineModeNight,
   MdOutlineWbSunny,
@@ -120,6 +121,7 @@ const Dashboard = () => {
   const [showMediaMenu, setShowMediaMenu] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(null);
+  const [showReactionInfo, setShowReactionInfo] = useState(null);
 
   const user = JSON.parse(localStorage.getItem("user") || "null");
   const navigate = useNavigate();
@@ -1013,12 +1015,20 @@ const Dashboard = () => {
         </div>
       )}
 
+      {showReactionInfo && (
+        <ReactionInfo
+          reactions={showReactionInfo.reactions}
+          onClose={() => setShowReactionInfo(null)}
+          currentUserId={user.id}
+        />
+      )}
+
       <div className="topbar">
         <div className="brand">
           <button className="menu-btn" onClick={toggleSidebar}>
             <MdMenu />
           </button>
-          <div className="logo">chatiify</div>
+          <div className="logo">Chatiify</div>
           <span className="username">@{user.username}</span>
         </div>
         <div className="actions">
@@ -1335,7 +1345,10 @@ const Dashboard = () => {
                               </div>
 
                               {m.reactions && Array.isArray(m.reactions) && m.reactions.length > 0 && (
-                                <div className="message-reactions">
+                                <div 
+                                  className="message-reactions"
+                                  onClick={() => setShowReactionInfo({ messageId: m.id, reactions: m.reactions })}
+                                >
                                   {m.reactions.reduce((acc, reaction) => {
                                     const existing = acc.find(r => r.emoji === reaction.emoji);
                                     if (existing) {
@@ -1352,18 +1365,20 @@ const Dashboard = () => {
                                     }
                                     return acc;
                                   }, []).map((reaction, idx) => (
-                                    <button
+                                    <span
                                       key={idx}
-                                      className={`reaction ${reaction.byMe ? 'by-me' : ''}`}
-                                      onClick={() => handleReaction(m.id, reaction.emoji)}
-                                      title={reaction.users.join(', ')}
+                                      className={`reaction-bubble ${reaction.byMe ? 'by-me' : ''}`}
+                                      title={`${reaction.users.join(', ')} reacted`}
                                     >
-                                      {reaction.emoji} {reaction.count > 1 ? reaction.count : ''}
-                                    </button>
+                                      {reaction.emoji} {reaction.count}
+                                    </span>
                                   ))}
                                   <button
-                                    className="reaction add-reaction"
-                                    onClick={() => setShowEmojiPicker(m.id)}
+                                    className="reaction-add-btn"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setShowEmojiPicker(m.id);
+                                    }}
                                     title="Add reaction"
                                   >
                                     +
