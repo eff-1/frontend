@@ -314,9 +314,15 @@ const Dashboard = () => {
     });
 
     socketInstance.on('reaction-added', ({ messageId, reactions }) => {
-      setMessages(prev => prev.map(msg =>
-        msg.id === messageId ? { ...msg, reactions } : msg
-      ));
+      console.log('Reaction added event received:', { messageId, reactions });
+      setMessages(prev => prev.map(msg => {
+        if (msg.id === messageId) {
+          console.log('Updating message reactions:', { oldReactions: msg.reactions, newReactions: reactions });
+          return { ...msg, reactions };
+        }
+        return msg;
+      }));
+      playSound('success');
     });
 
     setSocket(socketInstance);
@@ -542,15 +548,27 @@ const Dashboard = () => {
   };
 
   const handleReaction = (messageId, emoji) => {
-    if (socket && socket.connected) {
+    console.log('handleReaction called:', { messageId, emoji, userId: user.id, username: user.username });
+    
+    if (!socket || !socket.connected) {
+      console.error('Socket not connected');
+      addNotification('Not connected to server', 'error');
+      return;
+    }
+    
+    try {
       socket.emit('add-reaction', { 
         messageId, 
         emoji, 
         userId: user.id,
         username: user.username 
       });
+      console.log('Reaction emitted successfully');
       setActiveMenu(null);
       setShowEmojiPicker(null);
+    } catch (error) {
+      console.error('Error emitting reaction:', error);
+      addNotification('Failed to add reaction', 'error');
     }
   };
   
@@ -1000,7 +1018,7 @@ const Dashboard = () => {
           <button className="menu-btn" onClick={toggleSidebar}>
             <MdMenu />
           </button>
-          <div className="logo">ChatApp</div>
+          <div className="logo">chatiify</div>
           <span className="username">@{user.username}</span>
         </div>
         <div className="actions">

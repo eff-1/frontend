@@ -44,8 +44,11 @@ const Login = () => {
       </video>
 
       <div className="auth-card">
+        <div className="auth-brand">
+          <h1 className="auth-logo">Chatiify</h1>
+        </div>
         <div className="auth-header">
-          <h1>Welcome Back</h1>
+          <h2>Welcome Back</h2>
           <p>Sign in to your account</p>
         </div>
 

@@ -90,14 +90,31 @@
   color: #fff;
 }
 
-/* ===== Header ===== */
-.auth-header h1 {
-  font-size: 2rem;
+/* ===== Brand ===== */
+.auth-brand {
   text-align: center;
-  margin-bottom: 6px;
-  background: linear-gradient(90deg, #0ff, #a0f);
+  margin-bottom: 20px;
+}
+
+.auth-logo {
+  font-family: 'Pacifico', cursive;
+  font-size: 3.5rem;
+  font-weight: 400;
+  background: linear-gradient(135deg, #0ff 0%, #00d4ff 25%, #8a2be2 75%, #a0f 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 2px;
+  margin: 0;
+  text-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+}
+
+/* ===== Header ===== */
+.auth-header h2 {
+  font-size: 1.8rem;
+  text-align: center;
+  margin-bottom: 6px;
+  color: #fff;
 }
 
 .auth-header p {

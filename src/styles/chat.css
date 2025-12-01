@@ -194,12 +194,14 @@ body {
 }
 
 .logo { 
-  font-weight: 700; 
-  font-size: 18px; 
+  font-family: 'Pacifico', cursive;
+  font-weight: 400; 
+  font-size: 28px; 
   background: var(--cyan-purple); 
   -webkit-background-clip: text; 
   -webkit-text-fill-color: transparent; 
   background-clip: text;
+  letter-spacing: 1px;
 }
 
 .username { 

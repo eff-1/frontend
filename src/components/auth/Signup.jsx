@@ -59,8 +59,11 @@ const Signup = () => {
       </video>
 
       <div className="auth-card">
+        <div className="auth-brand">
+          <h1 className="auth-logo">Chatiify</h1>
+        </div>
         <div className="auth-header">
-          <h1>Create Account</h1>
+          <h2>Create Account</h2>
           <p>Join the conversation</p>
         </div>
 
