@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
 import axios from "axios";
 import io from 'socket.io-client';
+import EmojiPicker from './EmojiPicker';
 import {
   MdOutlineModeNight,
   MdOutlineWbSunny,
@@ -118,6 +119,7 @@ const Dashboard = () => {
   const [unreadCounts, setUnreadCounts] = useState({});
   const [showMediaMenu, setShowMediaMenu] = useState(false);
   const [notifications, setNotifications] = useState([]);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(null);
 
   const user = JSON.parse(localStorage.getItem("user") || "null");
   const navigate = useNavigate();
@@ -523,17 +525,13 @@ const Dashboard = () => {
         username: user.username 
       });
       setActiveMenu(null);
+      setShowEmojiPicker(null);
     }
   };
   
   const handleReactionPicker = (messageId) => {
     setActiveMenu(null);
-    // Show emoji picker - we'll implement this
-    const emojis = ['❤️', '😂', '😮', '😢', '🙏', '👍', '🔥', '🎉'];
-    const emoji = prompt(`Choose reaction:\n${emojis.join(' ')}\n\nOr type your own emoji:`);
-    if (emoji && emoji.trim()) {
-      handleReaction(messageId, emoji.trim());
-    }
+    setShowEmojiPicker(messageId);
   };
 
   const handleFileUpload = async (file, type) => {
@@ -1270,12 +1268,7 @@ const Dashboard = () => {
                                       
                                       {activeMenu === m.id && (
                                         <div 
-                                          className="message-menu"
-                                          style={{
-                                            // Smart positioning to keep menu visible
-                                            right: isOwn ? 'auto' : '0',
-                                            left: isOwn ? '0' : 'auto',
-                                          }}
+                                          className={`message-menu ${isOwn ? 'menu-own' : 'menu-other'} ${m.message.length < 20 ? 'menu-short' : ''}`}
                                         >
                                           <button onClick={() => handleMenuAction('reply', m)}>
                                             <MdOutlineReply /> Reply
@@ -1327,7 +1320,22 @@ const Dashboard = () => {
                                       {reaction.emoji} {reaction.count > 1 ? reaction.count : ''}
                                     </button>
                                   ))}
+                                  <button
+                                    className="reaction add-reaction"
+                                    onClick={() => setShowEmojiPicker(m.id)}
+                                    title="Add reaction"
+                                  >
+                                    +
+                                  </button>
                                 </div>
+                              )}
+                              
+                              {showEmojiPicker === m.id && (
+                                <EmojiPicker
+                                  onSelect={(emoji) => handleReaction(m.id, emoji)}
+                                  onClose={() => setShowEmojiPicker(null)}
+                                  position={isOwn ? 'bottom-right' : 'bottom-left'}
+                                />
                               )}
                             </>
                           )}
