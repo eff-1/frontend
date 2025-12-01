@@ -316,14 +316,22 @@ const Dashboard = () => {
     });
 
     socketInstance.on('reaction-added', ({ messageId, reactions }) => {
-      console.log('Reaction added event received:', { messageId, reactions });
-      setMessages(prev => prev.map(msg => {
-        if (msg.id === messageId) {
-          console.log('Updating message reactions:', { oldReactions: msg.reactions, newReactions: reactions });
-          return { ...msg, reactions };
-        }
-        return msg;
-      }));
+      console.log('\n=== FRONTEND REACTION UPDATE ===');
+      console.log('Message ID:', messageId);
+      console.log('New reactions:', reactions);
+      
+      setMessages(prev => {
+        const updated = prev.map(msg => {
+          if (msg.id === messageId) {
+            console.log('Old reactions:', msg.reactions);
+            console.log('Updating to:', reactions);
+            return { ...msg, reactions };
+          }
+          return msg;
+        });
+        console.log('=== END FRONTEND UPDATE ===\n');
+        return updated;
+      });
       playSound('success');
     });
 
@@ -385,6 +393,8 @@ const Dashboard = () => {
       }
       
       const res = await axios.get(endpoint);
+      console.log('Fetched messages:', res.data);
+      console.log('Messages with reactions:', res.data.filter(m => m.reactions && m.reactions.length > 0));
       setMessages(res.data || []);
     } catch (err) {
       console.error('Fetch messages error:', err);
@@ -1018,8 +1028,10 @@ const Dashboard = () => {
       {showReactionInfo && (
         <ReactionInfo
           reactions={showReactionInfo.reactions}
+          messageId={showReactionInfo.messageId}
           onClose={() => setShowReactionInfo(null)}
           currentUserId={user.id}
+          onRemoveReaction={handleReaction}
         />
       )}
 

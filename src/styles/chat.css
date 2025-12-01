@@ -3649,3 +3649,34 @@ textarea:focus-visible {
 body.dark .reaction-info-modal {
   background: var(--bg-tertiary);
 }
+
+/* Remove Reaction Button in Modal */
+.remove-reaction-btn {
+  background: var(--danger);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.remove-reaction-btn:hover {
+  background: #c0392b;
+  transform: scale(1.05);
+}
+
+.reaction-group-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
