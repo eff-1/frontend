@@ -239,12 +239,18 @@ const Dashboard = () => {
 
     socketInstance.on('message-delivered', ({ tempId, messageId, status }) => {
       setMessages(prev => prev.map(msg => 
-        msg.id === tempId ? { ...msg, id: messageId, status: 'sent' } : msg
+        msg.id === tempId ? { ...msg, id: messageId, status: status || 'sent' } : msg
       ));
       setActionLoading(null);
     });
     
-    socketInstance.on('message-seen', ({ messageId, seenBy }) => {
+    socketInstance.on('message-status-updated', ({ messageId, status }) => {
+      setMessages(prev => prev.map(msg => 
+        msg.id === messageId ? { ...msg, status } : msg
+      ));
+    });
+    
+    socketInstance.on('message-seen', ({ messageId, seenBy, status }) => {
       setMessages(prev => prev.map(msg => 
         msg.id === messageId ? { ...msg, status: 'seen', seenBy } : msg
       ));
@@ -330,7 +336,26 @@ const Dashboard = () => {
     const chatKey = selectedChat.type === 'general' ? 'general' : `private-${selectedChat.data?.id}`;
     setUnreadCounts(prev => ({ ...prev, [chatKey]: 0 }));
   }, [selectedChat]);
-  useEffect(() => { messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); }, [messages]);
+  useEffect(() => { 
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); 
+    
+    // Mark messages as seen after scrolling
+    if (messages.length > 0 && socket && socket.connected) {
+      const unseenMessageIds = messages
+        .filter(m => m.sender_id !== user.id && m.status !== 'seen')
+        .map(m => m.id);
+      
+      if (unseenMessageIds.length > 0) {
+        setTimeout(() => {
+          socket.emit('mark-messages-seen', {
+            messageIds: unseenMessageIds,
+            chatType: selectedChat.type,
+            chatId: selectedChat.type === 'general' ? 'general' : selectedChat.data?.id
+          });
+        }, 1000); // Mark as seen after 1 second
+      }
+    }
+  }, [messages]);
 
   const fetchUsers = async () => {
     try {
@@ -1267,9 +1292,7 @@ const Dashboard = () => {
                                       </button>
                                       
                                       {activeMenu === m.id && (
-                                        <div 
-                                          className={`message-menu ${isOwn ? 'menu-own' : 'menu-other'} ${m.message.length < 20 ? 'menu-short' : ''}`}
-                                        >
+                                        <div className="message-menu">
                                           <button onClick={() => handleMenuAction('reply', m)}>
                                             <MdOutlineReply /> Reply
                                           </button>

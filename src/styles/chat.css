@@ -1077,8 +1077,9 @@ body.show-sidebar .sidebar {
 
 .message-menu {
   position: absolute;
-  bottom: 100%;
-  margin-bottom: 8px;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
   background: var(--bg-secondary); 
   backdrop-filter: var(--glass-blur);
   border: 1px solid var(--border); 
@@ -1088,6 +1089,7 @@ body.show-sidebar .sidebar {
   min-width: 160px; 
   z-index: 300;
   animation: menuSlideIn 0.2s ease-out;
+  white-space: nowrap;
 }
 
 body.dark .message-menu {
@@ -1095,25 +1097,25 @@ body.dark .message-menu {
   border: 1px solid var(--border);
 }
 
-/* Default positioning for own messages (right side) */
-.message-menu.menu-own {
-  right: 0;
-}
-
-/* Default positioning for other messages (left side) */
-.message-menu.menu-other {
-  left: 0;
-}
-
-/* For short messages near edges, swap the side */
-.message-menu.menu-own.menu-short {
-  right: auto;
-  left: 0;
-}
-
-.message-menu.menu-other.menu-short {
-  left: auto;
-  right: 0;
+/* Ensure menu stays within viewport on mobile */
+@media (max-width: 768px) {
+  .message-menu {
+    left: auto;
+    right: auto;
+    transform: none;
+  }
+  
+  /* For own messages (right side) */
+  .message-wrapper.own .message-menu {
+    right: 0;
+    left: auto;
+  }
+  
+  /* For other messages (left side) */
+  .message-wrapper:not(.own) .message-menu {
+    left: 0;
+    right: auto;
+  }
 }
 
 body.dark .message-menu {
