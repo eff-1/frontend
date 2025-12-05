@@ -1358,35 +1358,45 @@ const Dashboard = () => {
 
                               {m.reactions && Array.isArray(m.reactions) && m.reactions.length > 0 && (
                                 <div 
-                                  className="message-reactions"
+                                  className="message-reactions-compact"
                                   onClick={() => setShowReactionInfo({ messageId: m.id, reactions: m.reactions })}
+                                  title="Click to see who reacted"
                                 >
-                                  {m.reactions.reduce((acc, reaction) => {
-                                    const existing = acc.find(r => r.emoji === reaction.emoji);
-                                    if (existing) {
-                                      existing.count++;
-                                      existing.users.push(reaction.username || `User ${reaction.user_id}`);
-                                      if (reaction.user_id === user.id) existing.byMe = true;
-                                    } else {
-                                      acc.push({
-                                        emoji: reaction.emoji,
-                                        count: 1,
-                                        users: [reaction.username || `User ${reaction.user_id}`],
-                                        byMe: reaction.user_id === user.id
-                                      });
-                                    }
-                                    return acc;
-                                  }, []).map((reaction, idx) => (
-                                    <span
-                                      key={idx}
-                                      className={`reaction-bubble ${reaction.byMe ? 'by-me' : ''}`}
-                                      title={`${reaction.users.join(', ')} reacted`}
-                                    >
-                                      {reaction.emoji} {reaction.count}
-                                    </span>
-                                  ))}
+                                  <div className="reaction-emojis">
+                                    {m.reactions.reduce((acc, reaction) => {
+                                      const existing = acc.find(r => r.emoji === reaction.emoji);
+                                      if (existing) {
+                                        existing.count++;
+                                        if (reaction.user_id === user.id) existing.byMe = true;
+                                      } else {
+                                        acc.push({
+                                          emoji: reaction.emoji,
+                                          count: 1,
+                                          byMe: reaction.user_id === user.id
+                                        });
+                                      }
+                                      return acc;
+                                    }, []).slice(0, 3).map((reaction, idx) => (
+                                      <span
+                                        key={idx}
+                                        className={`reaction-emoji-mini ${reaction.byMe ? 'by-me' : ''}`}
+                                      >
+                                        {reaction.emoji}
+                                      </span>
+                                    ))}
+                                    {m.reactions.reduce((acc, r) => {
+                                      if (!acc.find(x => x.emoji === r.emoji)) acc.push(r);
+                                      return acc;
+                                    }, []).length > 3 && (
+                                      <span className="reaction-more">+{m.reactions.reduce((acc, r) => {
+                                        if (!acc.find(x => x.emoji === r.emoji)) acc.push(r);
+                                        return acc;
+                                      }, []).length - 3}</span>
+                                    )}
+                                  </div>
+                                  <span className="reaction-total-count">{m.reactions.length}</span>
                                   <button
-                                    className="reaction-add-btn"
+                                    className="reaction-add-mini"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setShowEmojiPicker(m.id);
