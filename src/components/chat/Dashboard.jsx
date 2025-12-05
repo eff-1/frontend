@@ -196,12 +196,12 @@ const Dashboard = () => {
     socketInstance.on('connect', () => {
       setConnectionStatus('connected');
       socketInstance.emit('user-online', user.id);
-      addNotification('Connected to chat', 'success');
+      // Removed annoying notification
     });
 
     socketInstance.on('disconnect', () => {
       setConnectionStatus('disconnected');
-      addNotification('Disconnected from chat', 'error');
+      // Removed annoying notification
     });
 
     socketInstance.on('connect_error', () => setConnectionStatus('error'));
@@ -262,7 +262,7 @@ const Dashboard = () => {
       setMessages(prev => prev.filter(msg => msg.id !== messageId));
       setActionLoading(null);
       setNotifications(prev => prev.filter(n => n.type !== 'process'));
-      addNotification('Message deleted successfully', 'success');
+      // Removed success notification
       playSound('success');
       setShowDeleteModal(null);
     });
@@ -278,7 +278,7 @@ const Dashboard = () => {
       setEditingMessage(null);
       setEditText('');
       setActionLoading(null);
-      addNotification('Message edited successfully', 'success');
+      // Removed success notification
       playSound('success');
     });
 
@@ -347,11 +347,24 @@ const Dashboard = () => {
   }, [user.id, selectedChat]);
 
   useEffect(() => { fetchUsers(); }, []);
+  
   useEffect(() => { 
     fetchMessages();
     const chatKey = selectedChat.type === 'general' ? 'general' : `private-${selectedChat.data?.id}`;
     setUnreadCounts(prev => ({ ...prev, [chatKey]: 0 }));
   }, [selectedChat]);
+  
+  // Auto-refresh messages every 30 seconds in background
+  useEffect(() => {
+    const refreshInterval = setInterval(() => {
+      if (socket && socket.connected) {
+        // Silently refresh messages in background
+        fetchMessages();
+      }
+    }, 30000); // 30 seconds
+    
+    return () => clearInterval(refreshInterval);
+  }, [selectedChat, socket]);
   useEffect(() => { 
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }); 
     
@@ -666,10 +679,10 @@ const Dashboard = () => {
             status: 'delivered'
           } : msg
         ));
-        addNotification(`${filePreview.type === 'image' ? 'Image' : 'File'} sent successfully`, 'success');
+        // Removed annoying success notification
       }
     } catch (err) {
-      setMessages(prev => prev.filter(msg => msg.id !== tempId));
+      setMessages(prev => prev.filter(msg => msg.id === tempId));
       addNotification('Upload failed: ' + (err.response?.data?.error || err.message), 'error');
     } finally {
       setUploadLoading(false);
@@ -1040,7 +1053,7 @@ const Dashboard = () => {
           <button className="menu-btn" onClick={toggleSidebar}>
             <MdMenu />
           </button>
-          <div className="logo">Chatiify</div>
+          <div className="logo" onClick={() => window.location.reload()} style={{ cursor: 'pointer' }} title="Reload page">Chatiify</div>
           <span className="username">@{user.username}</span>
         </div>
         <div className="actions">
@@ -1357,46 +1370,48 @@ const Dashboard = () => {
                               </div>
 
                               {m.reactions && Array.isArray(m.reactions) && m.reactions.length > 0 && (
-                                <div 
-                                  className="message-reactions-compact"
-                                  onClick={() => setShowReactionInfo({ messageId: m.id, reactions: m.reactions })}
-                                  title="Click to see who reacted"
-                                >
-                                  <div className="reaction-emojis">
-                                    {m.reactions.reduce((acc, reaction) => {
-                                      const existing = acc.find(r => r.emoji === reaction.emoji);
-                                      if (existing) {
-                                        existing.count++;
-                                        if (reaction.user_id === user.id) existing.byMe = true;
-                                      } else {
-                                        acc.push({
-                                          emoji: reaction.emoji,
-                                          count: 1,
-                                          byMe: reaction.user_id === user.id
-                                        });
-                                      }
-                                      return acc;
-                                    }, []).slice(0, 3).map((reaction, idx) => (
-                                      <span
-                                        key={idx}
-                                        className={`reaction-emoji-mini ${reaction.byMe ? 'by-me' : ''}`}
-                                      >
-                                        {reaction.emoji}
-                                      </span>
-                                    ))}
-                                    {m.reactions.reduce((acc, r) => {
-                                      if (!acc.find(x => x.emoji === r.emoji)) acc.push(r);
-                                      return acc;
-                                    }, []).length > 3 && (
-                                      <span className="reaction-more">+{m.reactions.reduce((acc, r) => {
+                                <div className="message-reactions-wrapper">
+                                  <div 
+                                    className="message-reactions-compact"
+                                    onClick={() => setShowReactionInfo({ messageId: m.id, reactions: m.reactions })}
+                                    title="Click to see who reacted"
+                                  >
+                                    <div className="reaction-emojis">
+                                      {m.reactions.reduce((acc, reaction) => {
+                                        const existing = acc.find(r => r.emoji === reaction.emoji);
+                                        if (existing) {
+                                          existing.count++;
+                                          if (reaction.user_id === user.id) existing.byMe = true;
+                                        } else {
+                                          acc.push({
+                                            emoji: reaction.emoji,
+                                            count: 1,
+                                            byMe: reaction.user_id === user.id
+                                          });
+                                        }
+                                        return acc;
+                                      }, []).slice(0, 3).map((reaction, idx) => (
+                                        <span
+                                          key={idx}
+                                          className={`reaction-emoji-mini ${reaction.byMe ? 'by-me' : ''}`}
+                                        >
+                                          {reaction.emoji}
+                                        </span>
+                                      ))}
+                                      {m.reactions.reduce((acc, r) => {
                                         if (!acc.find(x => x.emoji === r.emoji)) acc.push(r);
                                         return acc;
-                                      }, []).length - 3}</span>
-                                    )}
+                                      }, []).length > 3 && (
+                                        <span className="reaction-more">+{m.reactions.reduce((acc, r) => {
+                                          if (!acc.find(x => x.emoji === r.emoji)) acc.push(r);
+                                          return acc;
+                                        }, []).length - 3}</span>
+                                      )}
+                                    </div>
+                                    <span className="reaction-total-count">{m.reactions.length}</span>
                                   </div>
-                                  <span className="reaction-total-count">{m.reactions.length}</span>
                                   <button
-                                    className="reaction-add-mini"
+                                    className="reaction-add-separate"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setShowEmojiPicker(m.id);

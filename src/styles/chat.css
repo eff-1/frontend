@@ -3453,12 +3453,19 @@ textarea:focus-visible {
   }
 }
 
+/* Reaction Wrapper - Contains reactions + add button */
+.message-reactions-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 4px;
+}
+
 /* Compact Reaction Display - Stacked Together */
 .message-reactions-compact {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  margin-top: 4px;
   padding: 2px 6px;
   background: var(--bg-tertiary);
   border: 1px solid var(--border);
@@ -3518,28 +3525,43 @@ textarea:focus-visible {
   color: rgba(255, 255, 255, 0.8);
 }
 
-.reaction-add-mini {
-  background: transparent;
-  border: none;
+/* Separate Add Reaction Button - Outside the reaction container */
+.reaction-add-separate {
+  background: var(--bg-tertiary);
+  border: 1px dashed var(--border);
   color: var(--text-muted);
   cursor: pointer;
   font-size: 12px;
   font-weight: 700;
-  padding: 0 2px;
+  padding: 2px 6px;
+  border-radius: 10px;
   transition: var(--transition);
   line-height: 1;
+  min-width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.reaction-add-mini:hover {
+.reaction-add-separate:hover {
+  background: var(--accent-light);
+  border-color: var(--accent);
+  border-style: solid;
   color: var(--accent);
-  transform: scale(1.2);
+  transform: scale(1.1);
 }
 
-.message-wrapper.own .reaction-add-mini {
+.message-wrapper.own .reaction-add-separate {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
   color: rgba(255, 255, 255, 0.7);
 }
 
-.message-wrapper.own .reaction-add-mini:hover {
+.message-wrapper.own .reaction-add-separate:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+  border-style: solid;
   color: white;
 }
 
