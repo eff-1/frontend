@@ -230,11 +230,17 @@ const Dashboard = () => {
               (message.message.length > 50 ? message.message.slice(0, 50) + '...' : message.message) :
               `${message.message_type} message`
           );
+          // Fix: Properly identify chat for unread count
           const chatKey = message.recipient_id ? `private-${message.sender_id}` : 'general';
-          setUnreadCounts(prev => ({
-            ...prev,
-            [chatKey]: (prev[chatKey] || 0) + 1
-          }));
+          console.log('Adding unread count for:', chatKey, 'Message:', message);
+          setUnreadCounts(prev => {
+            const newCounts = {
+              ...prev,
+              [chatKey]: (prev[chatKey] || 0) + 1
+            };
+            console.log('New unread counts:', newCounts);
+            return newCounts;
+          });
         }
       }
     });
@@ -354,12 +360,12 @@ const Dashboard = () => {
     setUnreadCounts(prev => ({ ...prev, [chatKey]: 0 }));
   }, [selectedChat]);
   
-  // Auto-refresh messages every 30 seconds in background
+  // Auto-refresh messages every 30 seconds in background (SILENT)
   useEffect(() => {
     const refreshInterval = setInterval(() => {
       if (socket && socket.connected) {
-        // Silently refresh messages in background
-        fetchMessages();
+        // Silently refresh messages in background (no loading animation)
+        fetchMessages(true); // true = silent mode
       }
     }, 30000); // 30 seconds
     
@@ -396,9 +402,9 @@ const Dashboard = () => {
     }
   };
 
-  const fetchMessages = async () => {
+  const fetchMessages = async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true); // Only show loading for manual refresh
       let endpoint = `${URL}/api/messages/general`;
       
       if (selectedChat.type === "private" && selectedChat.data) {
@@ -411,10 +417,12 @@ const Dashboard = () => {
       setMessages(res.data || []);
     } catch (err) {
       console.error('Fetch messages error:', err);
-      setMessages([]);
-      addNotification('Failed to load messages', 'error');
+      if (!silent) {
+        setMessages([]);
+        addNotification('Failed to load messages', 'error');
+      }
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
